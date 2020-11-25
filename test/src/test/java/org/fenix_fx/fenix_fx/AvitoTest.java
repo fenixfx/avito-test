@@ -10,6 +10,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
+import java.util.List;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
 public class AvitoTest {
@@ -44,10 +47,18 @@ public class AvitoTest {
         avitoPage.changeCategory("Телефоны");
         avitoPage.sortByDate();
 
+        List<WebElement> items = avitoPage.getItems();
+
+        Comparator<WebElement> comp = (el1, el2) -> {
+            Integer price1 = Integer.parseInt(el1.findElement(By.xpath(".//meta[@itemprop=\"price\"]")).getAttribute("content"));
+            Integer price2 = Integer.parseInt(el2.findElement(By.xpath(".//meta[@itemprop=\"price\"]")).getAttribute("content"));
+            return price1.compareTo(price2);
+        };
+        TreeSet<WebElement> itemSet = new TreeSet<WebElement>(comp);
+        itemSet.addAll(items);
+
         StringBuilder res = new StringBuilder();
-        for (WebElement item: avitoPage.getItems()) {
-            res.append(item.findElement(By.xpath(".//a")).getAttribute("href")).append("\n");
-        }
+        itemSet.forEach(item -> res.append(item.findElement(By.xpath(".//a")).getAttribute("href")).append("\n"));
         saveToFile(res.toString());
     }
 
